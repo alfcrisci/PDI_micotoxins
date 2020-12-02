@@ -1,7 +1,6 @@
 library(readxl)
 library(doBy)
-
-# setwd("/home/alf/Scrivania/lav_toscano_ISS/full_PDI/codice")
+library(XLConnect)
 
 ###########################################################################################################
 # functions
@@ -190,11 +189,10 @@ XLConnect::writeWorksheetToFile("PDI_norm_results.xls",LB_female[[i]],"LB_female
 
 
 
-##########################################################################################################################
 
 ###################
-# references
+# References
 
-#weibull mean 
+# weibull mean 
 # https://stats.stackexchange.com/questions/361191/attempting-to-find-mean-of-weibull-function-in-r
 # https://stackoverflow.com/questions/11817883/fitting-a-3-parameter-weibull-distribution
