@@ -1,11 +1,9 @@
 #########################################################################################################
 library(readxl)
 library(fitdistrplus)
-library(pastecs)
-library(psych)
+library(XLConnect)
 #########################################################################################################
 
-# setwd("/home/alf/Scrivania/lav_toscano_ISS/full_PDI/codice")
 
 
 source("aux_analisi_ISS.R")
