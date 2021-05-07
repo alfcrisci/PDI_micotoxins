@@ -4,8 +4,6 @@ library(fitdistrplus)
 library(XLConnect)
 #########################################################################################################
 
-
-
 source("aux_analisi_ISS.R")
 
 ex_adults_m_f=readRDS("final_data/ex_adults_m_f.rds")
@@ -24,12 +22,12 @@ res_desc=lapply(ex_adults_m_f,function(x) {c(mean(x$Mean,na.rm=T),mean(x$SD,na.r
                                              mean(x$LB,na.rm=T),sd(x$UB,na.rm=T))})
 
 ###############################################################################################
-# con più di 6 dati
+# more than 6 data
 
 moredata=ex_adults_m_f[c(which(as.numeric(unlist(number_biomarker))>6))]
 
 ###############################################################################################
-# con meno di 6 dati
+# less than 6 data
 
 poordata=ex_adults_m_f[c(which(as.numeric(unlist(number_biomarker))<=6))]
 
@@ -45,11 +43,13 @@ res_more=lapply(moredata,function(x) {c(mean(x$Mean,na.rm=T),
                                         mean(x$"resLOD_Method LOD",na.rm=T))
                                      })
 ###############################################################################################
-
+# N = 500 is the dimension of resapling
+                        
 res_pooled_UB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(x$UB[x$UB>0]))})
 res_pooled_LB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(ifelse(x$LB==0,0.0001,x$LB)))})
 res_pooled_mean_poor=lapply(res_poor,function(x) resample_function_weib(x[1],x[2],N=500))
 res_pooled_mean_more=lapply(res_more,function(x) resample_function_weib(x[1],x[2],N=500))
+                            
 ###############################################################################################
 
 
@@ -61,8 +61,8 @@ num_mean_more=lapply(res_pooled_mean_more,length) #500
 
 
 
-############################################################################################################
-# Qui si trattano i dati upper bound
+###########################################################################################################
+# Upper bound calculation task
 
 res_UB=list()
 res_dists_UB=list()
@@ -74,6 +74,7 @@ res_names=names(res_pooled_UB)
 for ( i in 1:length(res_pooled_UB)) {
   
   x=as.numeric(res_pooled_UB[[i]])
+  
   xboot=sample(x,size=500, replace = TRUE)
   
   png(paste0("Upper_bound_",as.character(res_names[i]),".png"))
@@ -84,6 +85,7 @@ for ( i in 1:length(res_pooled_UB)) {
   #######################################################
   
   dists=list()
+  
   idlist=c("weibull","exp","norm")
 
   fw <- try(fitdist(xboot,"weibull"))
@@ -114,7 +116,7 @@ for ( i in 1:length(res_pooled_UB)) {
 }
 
 ##########################################################################################################################################
-# Qui si trattano i dati lower bound
+# Lower bound calculation task
 
 res_LB=list()
 res_dists_LB=list()
@@ -166,7 +168,7 @@ for ( i in 1:length(res_pooled_LB)) {
 }
 
 ##########################################################################################################################################
-# lavoro su popolaizoni con meno di 7 dati
+# working on subset of species with less than 6 data
 
 res_mean=list()
 res_dists_mean=list()
@@ -180,7 +182,7 @@ for ( i in 1:length(res_pooled_mean_poor)) {
   xboot=sample(x,size=500, replace = TRUE)
   
   #######################################################
-  png(paste0("Mean_under7_",as.character(res_names[i]),".png"))
+  png(paste0("Mean_under6_",as.character(res_names[i]),".png"))
   res_mean[[i]]=descdist(xboot, boot = 1000)
   title(paste("\n\nMean fit ",as.character(res_names[i])))
   dev.off()
@@ -194,8 +196,8 @@ for ( i in 1:length(res_pooled_mean_poor)) {
   options(warn=0)
   
   for ( jj in idlist ) {
-    outfilepdf=paste0("Plot_under7","_",paste0(as.character(res_names[i]),"_dists_mean.pdf"))
-    outfilepng=paste0("Plot_under7","_",paste0(as.character(res_names[i]),"_dists_mean.png"))
+    outfilepdf=paste0("Plot_under6","_",paste0(as.character(res_names[i]),"_dists_mean.pdf"))
+    outfilepng=paste0("Plot_under6","_",paste0(as.character(res_names[i]),"_dists_mean.png"))
     
     ds=denscomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"density"))
     qq=qqcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"QQ-plot"))
@@ -214,7 +216,7 @@ for ( i in 1:length(res_pooled_mean_poor)) {
 }
 
 ##########################################################################################################################################
-# Qui si trattano con quelli con più di 6 dati
+# working on  subsets of species  with more than 6 data
 
 res_mean_more=list()
 res_dists_mean_more=list()
@@ -311,12 +313,12 @@ XLConnect::writeWorksheetToFile("fitparams_mean.xls",res_param_mean_more_df,"fit
 
 
 #########################################################################################
-# references
+# References
 
 # [1] https://math.stackexchange.com/questions/2487059/whats-the-kurtosis-of-exponential-distribution
-# https://rstudio-pubs-static.s3.amazonaws.com/208109_47ee36af179343658be360532b3afde3.html
-# https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/
-# https://stats.stackexchange.com/questions/100862/weibull-distribution-from-given-mean
-# https://stats.stackexchange.com/questions/132652/how-to-determine-which-distribution-fits-my-data-best
-# https://stats.stackexchange.com/questions/159452/how-can-i-recreate-a-weibull-distribution-given-mean-and-standard-deviation-and
-# https://stats.stackexchange.com/questions/60511/weibull-distribution-parameters-k-and-c-for-wind-speed-data
+# [2] https://rstudio-pubs-static.s3.amazonaws.com/208109_47ee36af179343658be360532b3afde3.html
+# [3] https://rviews.rstudio.com/2017/09/25/survival-analysis-with-r/
+# [4] https://stats.stackexchange.com/questions/100862/weibull-distribution-from-given-mean
+# [5] https://stats.stackexchange.com/questions/132652/how-to-determine-which-distribution-fits-my-data-best
+# [6] https://stats.stackexchange.com/questions/159452/how-can-i-recreate-a-weibull-distribution-given-mean-and-standard-deviation-and
+# [7] https://stats.stackexchange.com/questions/60511/weibull-distribution-parameters-k-and-c-for-wind-speed-data
