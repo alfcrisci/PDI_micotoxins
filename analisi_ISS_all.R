@@ -7,16 +7,16 @@ library(psych)
 library(KScorrect)
 library(ggplot2)
 library(ggpubr)
-
+library(summarytools)
 #########################################################################################################
 
 setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
 
 source("aux_analisi_ISS.R")
 
+set.seed(2)
 
 ex_adults_ad=rec_excel("final_data/extract_adults_m_f_EU_CHK.xlsx")
-
 saveRDS(ex_adults_ad,file="final_data/ex_adults_m_f_EU.rds")
 
 
@@ -108,15 +108,15 @@ for ( i in 1:length(res_pooled_UB)) {
   gof_fw <- try(gofstat(fw))
   gof_fexp <- try(gofstat(fexp))
   gof_flnor <- try(gofstat(flnor))
-  kgof_fw <-LcKS(x, "pweibull",nreps=4000,parallel = TRUE)
-  kgof_fexp <- LcKS(x, "pexp",nreps=4000,parallel = TRUE)
-  kgof_flnor <- LcKS(x, "pnorm",nreps=4000,parallel = TRUE)
+  kgof_fw <-LcKS(x, "pweibull",nreps=1000,parallel = TRUE)
+  kgof_fexp <- LcKS(x, "pexp",nreps=1000,parallel = TRUE)
+  kgof_flnor <- LcKS(x, "pnorm",nreps=1000,parallel = TRUE)
   
   dists[[1]]=fw;dists[[2]]= fexp;dists[[3]]=flnor
   kgof_dists[[1]]=kgof_fw;kgof_dists[[2]]= kgof_fexp;kgof_dists[[3]]=kgof_flnor
   gof_dists[[1]]=gof_fw;gof_dists[[2]]= gof_fexp;gof_dists[[3]]=gof_flnor
   options(warn=0)
-  
+  message(paste("fit  ",i, " fatto!"))
   for ( jj in idlist ) {
     outfilepdf=paste0("Plot","_",paste0(as.character(res_names[i]),"_dists_UB.pdf"))
     outfilepng=paste0("Plot","_",paste0(as.character(res_names[i]),"_dists_UB.png"))
@@ -133,15 +133,13 @@ for ( i in 1:length(res_pooled_UB)) {
   }
   
   res_dists_UB[[i]]=dists
-  res_param_UB[[i]]=c(dists[[1]]$estimate,
-                      dists[[1]]$sd,
-                      dists[[2]]$estimate,
-                      dists[[2]]$sd,
-                      dists[[3]]$estimate,
-                      dists[[3]]$sd);
+  res_param_UB[[i]]=c(dists[[1]]$estimate[1],dists[[1]]$estimate[2],
+                      dists[[1]]$sd[1],dists[[1]]$sd[2],
+                      dists[[2]]$estimate,dists[[2]]$sd,
+                      dists[[3]]$estimate,dists[[3]]$sd);
   
   
-  res_summary_UB[[i]]=summary_large(x)
+  res_summary_UB[[i]]=stat.desc(as.numeric(res_pooled_UB[[i]]))
 
   res_gof_dists_UB[[i]]=c(gof_fw$ks,gof_fw$kstest,gof_fw$aic,
                           gof_fexp$ks,gof_fexp$kstest,gof_fexp$aic,
@@ -188,9 +186,9 @@ for ( i in 1:length(res_pooled_LB)) {
   gof_fw <- try(gofstat(fw))
   gof_fexp <- try(gofstat(fexp))
   gof_flnor <- try(gofstat(flnor))
-  kgof_fw <-LcKS(x, "pweibull",nreps=4000,parallel = TRUE)
-  kgof_fexp <- LcKS(x, "pexp",nreps=4000,parallel = TRUE)
-  kgof_flnor <- LcKS(x, "pnorm",nreps=4000,parallel = TRUE)
+  kgof_fw <-LcKS(x, "pweibull",nreps=1000,parallel = TRUE)
+  kgof_fexp <- LcKS(x, "pexp",nreps=1000,parallel = TRUE)
+  kgof_flnor <- LcKS(x, "pnorm",nreps=1000,parallel = TRUE)
   
   dists[[1]]=fw;dists[[2]]= fexp;dists[[3]]=flnor
   kgof_dists[[1]]=kgof_fw;kgof_dists[[2]]= kgof_fexp;kgof_dists[[3]]=kgof_flnor
@@ -214,8 +212,11 @@ for ( i in 1:length(res_pooled_LB)) {
   }
   
   res_dists_LB[[i]]=dists
-  res_param_LB[[i]]=c(dists[[1]]$estimate,dists[[1]]$sd,dists[[2]]$estimate,dists[[2]]$sd,dists[[3]]$estimate,dists[[3]]$sd);
-  res_summary_LB[[i]]=summary_large(x)
+  res_param_LB[[i]]=c(dists[[1]]$estimate[1],dists[[1]]$estimate[2],
+                                           dists[[1]]$sd[1],dists[[1]]$sd[2],
+                                           dists[[2]]$estimate,dists[[2]]$sd,
+                                           dists[[3]]$estimate,dists[[3]]$sd);
+  res_summary_LB[[i]]=stat.desc(as.numeric(res_pooled_LB[[i]]))
   res_gof_dists_LB[[i]]=c(gof_fw$ks,gof_fw$kstest,gof_fw$aic,
                           gof_fexp$ks,gof_fexp$kstest,gof_fexp$aic,
                           gof_flnor$ks,gof_flnor$kstest,gof_flnor$aic);
@@ -261,9 +262,9 @@ for ( i in 1:length(res_pooled_mean_poor)) {
   gof_fw <- try(gofstat(fw))
   gof_fexp <- try(gofstat(fexp))
   gof_flnor <- try(gofstat(flnor))
-  kgof_fw <-LcKS(x, "pweibull",nreps=4000,parallel = TRUE)
-  kgof_fexp <- LcKS(x, "pexp",nreps=4000,parallel = TRUE)
-  kgof_flnor <- LcKS(x, "pnorm",nreps=4000,parallel = TRUE)
+  kgof_fw <-LcKS(x, "pweibull",nreps=1000,parallel = TRUE)
+  kgof_fexp <- LcKS(x, "pexp",nreps=1000,parallel = TRUE)
+  kgof_flnor <- LcKS(x, "pnorm",nreps=1000,parallel = TRUE)
   
   dists[[1]]=fw;dists[[2]]= fexp;dists[[3]]=flnor
   kgof_dists[[1]]=kgof_fw;kgof_dists[[2]]= kgof_fexp;kgof_dists[[3]]=kgof_flnor
@@ -286,13 +287,11 @@ for ( i in 1:length(res_pooled_mean_poor)) {
   }
   
   res_dists_mean[[i]]=dists
-  res_param_mean[[i]]=c(dists[[1]]$estimate,
-                        dists[[1]]$sd,
-                        dists[[2]]$estimate,
-                        dists[[2]]$sd,
-                        dists[[3]]$estimate,
-                        dists[[3]]$sd);
-  res_summary_mean[[i]]=summary_large(x)
+  res_param_mean[[i]]=c(dists[[1]]$estimate[1],dists[[1]]$estimate[2],
+                                                 dists[[1]]$sd[1],dists[[1]]$sd[2],
+                                                 dists[[2]]$estimate,dists[[2]]$sd,
+                                                 dists[[3]]$estimate,dists[[3]]$sd);
+  res_summary_mean[[i]]=stat.desc(as.numeric(res_pooled_mean_poor[[i]]))
   res_gof_dists_mean[[i]]=c(gof_fw$ks,gof_fw$kstest,gof_fw$aic,
                             gof_fexp$ks,gof_fexp$kstest,gof_fexp$aic,
                             gof_flnor$ks,gof_flnor$kstest,gof_flnor$aic);
@@ -337,9 +336,9 @@ for ( i in 1:length(res_pooled_mean_more)) {
   gof_fw <- try(gofstat(fw))
   gof_fexp <- try(gofstat(fexp))
   gof_flnor <- try(gofstat(flnor))
-  kgof_fw <-LcKS(x, "pweibull",nreps=4000,parallel = TRUE)
-  kgof_fexp <- LcKS(x, "pexp",nreps=4000,parallel = TRUE)
-  kgof_flnor <- LcKS(x, "pnorm",nreps=4000,parallel = TRUE)
+  kgof_fw <-LcKS(x, "pweibull",nreps=1000,parallel = TRUE)
+  kgof_fexp <- LcKS(x, "pexp",nreps=1000,parallel = TRUE)
+  kgof_flnor <- LcKS(x, "pnorm",nreps=1000,parallel = TRUE)
   
   dists[[1]]=fw;dists[[2]]= fexp;dists[[3]]=flnor
   kgof_dists[[1]]=kgof_fw;kgof_dists[[2]]= kgof_fexp;kgof_dists[[3]]=kgof_flnor
@@ -362,8 +361,11 @@ for ( i in 1:length(res_pooled_mean_more)) {
   }
   
   res_dists_mean_more[[i]]=dists
-  res_param_mean_more[[i]]=c(dists[[1]]$estimate,dists[[1]]$sd,dists[[2]]$estimate,dists[[2]]$sd,dists[[3]]$estimate,dists[[3]]$sd);
-  res_summary_mean_more[[i]]=summary_large(x)
+  res_param_mean_more[[i]]=c(dists[[1]]$estimate[1],dists[[1]]$estimate[2],
+                             dists[[1]]$sd[1],dists[[1]]$sd[2],
+                             dists[[2]]$estimate,dists[[2]]$sd,
+                             dists[[3]]$estimate,dists[[3]]$sd);
+  res_summary_mean_more[[i]]=stat.desc(as.numeric(res_pooled_mean_more[[i]]))
   res_gof_dists_mean_more[[i]]=c(gof_fw$ks,gof_fw$kstest,gof_fw$aic,
                                 gof_fexp$ks,gof_fexp$kstest,gof_fexp$aic,
                                 gof_flnor$ks,gof_flnor$kstest,gof_flnor$aic);

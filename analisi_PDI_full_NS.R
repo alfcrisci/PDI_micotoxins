@@ -2,7 +2,7 @@ library(readxl)
 library(doBy)
 
 setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
-
+set.seed(2)
 
 ###########################################################################################################
 # data labeling
