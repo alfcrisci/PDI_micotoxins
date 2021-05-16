@@ -192,3 +192,16 @@ descdist2=function (data, discrete = FALSE, boot = NULL, method = "unbiased",
     }
     return(structure(res, class = "descdist"))
 }
+
+
+##########################################################################################
+
+rec_excel=function(file) {
+shs=excel_sheets(file)
+res=list()
+for ( i in seq_along(shs)) {   res[[i]]=readxl::read_xlsx(file,i)}
+names(res)=shs
+return(res)
+}
+##########################################################################################
+

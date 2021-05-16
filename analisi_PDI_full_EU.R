@@ -1,7 +1,7 @@
 library(readxl)
 library(doBy)
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
+setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
 
 ###########################################################################################################
 # functions
@@ -42,7 +42,7 @@ scen_M=Wdf[Wdf$cat=="Male",]
 scen_A=Wdf[Wdf$cat=="Adults",]
 
 ##################################################################################################
-data_PDI=as.data.frame(read_xls("final_data/PDI_params_table.xls",1))
+data_PDI=as.data.frame(read_xls("final_data/PDI_params_table_EU.xls",1))
 data_PDI$exrate=data_PDI$exrate*100
 
 
@@ -105,17 +105,17 @@ return(res)
 ########################################################################################################################à
 mean_only_scen=calculate_scenario(data_PDI[1:3,],scen_A)
 mean_scen_Adults=calculate_scenario(data_PDI[4:8,],scen_A)
-mean_UB_Adults=calculate_scenario(data_PDI[13:17,],scen_A)
-mean_LB_Adults=calculate_scenario(data_PDI[22:26,],scen_A)
+mean_UB_Adults=calculate_scenario(data_PDI[11:18,],scen_A)
+mean_LB_Adults=calculate_scenario(data_PDI[21:28,],scen_A)
 
-mean_male=calculate_scenario(data_PDI[c(10,12),],scen_M)
-mean_female=calculate_scenario(data_PDI[9:11,],scen_F)
+mean_female=calculate_scenario(data_PDI[9,],scen_F)
+mean_male=calculate_scenario(data_PDI[c(10),],scen_M)
 
-UB_male=calculate_scenario(data_PDI[19:21,],scen_M)
-UB_female=calculate_scenario(data_PDI[18:20,],scen_F)
+UB_female=calculate_scenario(data_PDI[19,],scen_F)
+UB_male=calculate_scenario(data_PDI[20,],scen_M)
 
-LB_male=calculate_scenario(data_PDI[28:30,],scen_M)
-LB_female=calculate_scenario(data_PDI[27:29,],scen_F)
+LB_female=calculate_scenario(data_PDI[29,],scen_F)
+LB_male=calculate_scenario(data_PDI[30,],scen_M)
 
 file.remove("PDI_exp_results_EU.xls")
 XLConnect::writeWorksheetToFile("PDI_exp_results_EU.xls",Wdf,"Scenari")

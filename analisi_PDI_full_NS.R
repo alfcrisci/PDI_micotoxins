@@ -1,13 +1,8 @@
 library(readxl)
 library(doBy)
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
+setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
 
-###########################################################################################################
-# functions
-
-pdi_func=function(x,escr=70,vol_urine=2,weight=70) {return(x*(vol_urine/weight)*(100/escr))}
-sumfit=function(x) {return(data.frame(par=x$estimate[1],errpar=x$estimate[2],aic=x$aic,names=x$distname))}
 
 ###########################################################################################################
 # data labeling
@@ -41,13 +36,14 @@ scen_M=Wdf[Wdf$cat=="Male",]
 scen_A=Wdf[Wdf$cat=="Adults",]
 
 ##################################################################################################
-data_PDI=as.data.frame(read_xls("final_data/PDI_params_table_NS.xls",1))
-data_PDI$exrate=data_PDI$exrate*100
+data_PDIe=as.data.frame(read_xls("final_data/PDI_params_table_NS.xls",1))
+data_PDIe$exrate=data_PDIe$exrate*100
 
 
 
 ########################################################################################################################à
-
+###########################################################################################################
+# functions
 calculate_scenario=function(data_PDI,Wdf) {
   
 res_pdi_exp_F=list()
@@ -103,10 +99,17 @@ return(res)
 
 
 
+
+
+pdi_func=function(x,escr=70,vol_urine=2,weight=70) {return(x*(vol_urine/weight)*(100/escr))}
+sumfit=function(x) {return(data.frame(par=x$estimate[1],errpar=x$estimate[2],aic=x$aic,names=x$distname))}
 ########################################################################################################################à
-mean_LB_Adults=calculate_scenario(data_PDI[1:6,],scen_A)
-mean_UB_Adults=calculate_scenario(data_PDI[7:12,],scen_A)
-mean_scen_Adults=calculate_scenario(data_PDI[13:18,],scen_A)
+###########################################################################################################
+
+
+mean_LB_Adults=calculate_scenario(data_PDIe[1:6,],scen_A)
+mean_UB_Adults=calculate_scenario(data_PDIe[7:12,],scen_A)
+mean_scen_Adults=calculate_scenario(data_PDIe[13:18,],scen_A)
 
 
 
@@ -118,7 +121,6 @@ XLConnect::writeWorksheetToFile("PDI_exp_results_NS.xls",mean_UB_Adults[[i]],"me
 XLConnect::writeWorksheetToFile("PDI_exp_results_NS.xls",mean_LB_Adults[[i]],"mean_LB_Adults")
 i=2
 file.remove("PDI_weibull_results_NS.xls")
-XLConnect::writeWorksheetToFile("PDI_weibull_results_NS.xls",Wdf,"Scenari")
 XLConnect::writeWorksheetToFile("PDI_weibull_results_NS.xls",Wdf,"Scenari")
 XLConnect::writeWorksheetToFile("PDI_weibull_results_NS.xls",mean_scen_Adults[[i]],"mean_scen_Adults")
 XLConnect::writeWorksheetToFile("PDI_weibull_results_NS.xls",mean_UB_Adults[[i]],"mean_UB_Adults")

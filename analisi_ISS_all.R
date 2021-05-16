@@ -1,4 +1,5 @@
 #########################################################################################################
+library(openxlsx)
 library(readxl)
 library(fitdistrplus)
 library(pastecs)
@@ -6,34 +7,40 @@ library(psych)
 library(KScorrect)
 library(ggplot2)
 library(ggpubr)
+
 #########################################################################################################
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
+setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
+
 source("aux_analisi_ISS.R")
 
-ex_adults_m_f=readRDS("final_data/ex_adults_m_f.rds")
+
+ex_adults_ad=rec_excel("final_data/extract_adults_m_f_EU_CHK.xlsx")
+
+saveRDS(ex_adults_ad,file="final_data/ex_adults_m_f_EU.rds")
 
 
-number_biomarker=lapply(ex_adults_m_f,function(x) length(na.omit((x$UB))))
+number_biomarker_UB=lapply(ex_adults_ad,function(x) length(na.omit((x$UB))))
+number_biomarker_LB=lapply(ex_adults_ad,function(x) length(na.omit((x$LB))))
 
 res_pooled_UB=list()
 res_pooled_LB=list()
 res_UB=list()
 res_LB=list()
 
-res_desc=lapply(ex_adults_m_f,function(x) {c(mean(x$Mean,na.rm=T),mean(x$SD,na.rm=T),
+res_desc=lapply(ex_adults_ad,function(x) {c(mean(x$Mean,na.rm=T),mean(x$SD,na.rm=T),
                                              mean(x$UB,na.rm=T),sd(x$UB,na.rm=T),
-                                             mean(x$LB,na.rm=T),sd(x$UB,na.rm=T))})
+                                             mean(x$LB,na.rm=T),sd(x$LB,na.rm=T))})
 
 ###############################################################################################
 # con più di 6 dati
 
-moredata=ex_adults_m_f[c(which(as.numeric(unlist(number_biomarker))>6))]
+moredata=ex_adults_ad[c(which(as.numeric(unlist(number_biomarker_LB))>6))]
 
 ###############################################################################################
 # con meno di 6 dati
 
-poordata=ex_adults_m_f[c(which(as.numeric(unlist(number_biomarker))<=6))]
+poordata=ex_adults_ad[c(which(as.numeric(unlist(number_biomarker_LB))<=6))]
 
 ###############################################################################################
 
@@ -48,8 +55,8 @@ res_more=lapply(moredata,function(x) {c(mean(x$Mean,na.rm=T),
                                      })
 ###############################################################################################
 
-res_pooled_UB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(x$UB[x$UB>0]))})
-res_pooled_LB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(ifelse(x$LB==0,0.0001,x$LB)))})
+res_pooled_UB=lapply(ex_adults_ad,function(x) {as.numeric(na.omit(x$UB[x$UB>0]))})
+res_pooled_LB=lapply(ex_adults_ad,function(x) {as.numeric(na.omit(ifelse(x$LB==0,0.0001,x$LB)))})
 res_pooled_mean_poor=lapply(res_poor,function(x) resample_function_weib(x[1],x[2],N=500))
 res_pooled_mean_more=lapply(res_more,function(x) resample_function_weib(x[1],x[2],N=500))
 
@@ -62,7 +69,9 @@ num_LB=lapply(res_pooled_LB,length)
 num_mean=lapply(res_pooled_mean_poor,length) #500
 num_mean_more=lapply(res_pooled_mean_more,length) #500
 
-
+############################################################################################################
+dir.create("plots_EU")
+setwd("plots_EU")
 ############################################################################################################
 # UB upper bound data
 
@@ -81,10 +90,10 @@ for ( i in 1:length(res_pooled_UB)) {
   
   
   #######################################################
-  # png(paste0("Upper_bound_",as.character(res_names[i]),".png"))
-  # res_UB[[i]]=descdist(xboot, boot = 1000)
-  # title(paste("\n\nUpper bound ",as.character(res_names[i])))
-  # dev.off()
+  png(paste0("Upper_bound_",as.character(res_names[i]),".png"))
+  res_UB[[i]]=descdist(xboot, boot = 1000)
+  title(paste("\n\nUpper bound ",as.character(res_names[i])))
+  dev.off()
   #######################################################
   
    
@@ -118,9 +127,9 @@ for ( i in 1:length(res_pooled_UB)) {
     pp=ppcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"PP-plot"))
     
     
-    # out=ggarrange(ds, qq, cd, pp)
-    # ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
-    # ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
+    out=ggarrange(ds, qq, cd, pp)
+    ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
+    ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
   }
   
   res_dists_UB[[i]]=dists
@@ -155,17 +164,17 @@ res_summary_LB=list()
 res_names=names(res_pooled_LB)
 res_gof_dists_LB=list()
 res_kgof_dists_LB=list()
-
 for ( i in 1:length(res_pooled_LB)) {
   
   x=as.numeric(res_pooled_LB[[i]])
   xboot=sample(x,size=500, replace = TRUE)
   
   #######################################################
-  # png(paste0("Lower_bound_",as.character(res_names[i]),".png"))
-  # res_LB[[i]]=descdist(xboot, boot = 1000)
-  # title(paste("\n\nLower bound ",as.character(res_names[i])))
-  # dev.off()
+  png(paste0("Lower_bound_",as.character(res_names[i]),".png"))
+  res_LB[[i]]=descdist(xboot, boot = 1000)
+  title(paste("\n\nLower bound ",as.character(res_names[i])))
+  
+  dev.off()
   #######################################################
   
   dists=list()
@@ -199,9 +208,9 @@ for ( i in 1:length(res_pooled_LB)) {
     pp=ppcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"PP-plot"))
     
     
-    #out=ggarrange(ds, qq, cd, pp)
-    #ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
-    #ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
+    out=ggarrange(ds, qq, cd, pp)
+    ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
+    ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
   }
   
   res_dists_LB[[i]]=dists
@@ -235,10 +244,10 @@ for ( i in 1:length(res_pooled_mean_poor)) {
   xboot=sample(x,size=500, replace = TRUE)
   
   ######################################################################
-  # png(paste0("Mean_under7_",as.character(res_names[i]),".png"))
-  # res_mean[[i]]=descdist(xboot, boot = 1000)
-  # title(paste("\n\nMean fit ",as.character(res_names[i])))
-  # dev.off()
+  png(paste0("Mean_under7_",as.character(res_names[i]),".png"))
+  res_mean[[i]]=descdist(xboot, boot = 1000)
+  title(paste("\n\nMean fit ",as.character(res_names[i])))
+  dev.off()
   ######################################################################
   
   dists=list()
@@ -271,9 +280,9 @@ for ( i in 1:length(res_pooled_mean_poor)) {
     cd=cdfcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"CDF"))
     pp=ppcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"PP-plot"))
     
-    # out=ggarrange(ds, qq, cd, pp)
-    # ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
-    # ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
+    out=ggarrange(ds, qq, cd, pp)
+    ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
+    ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
   }
   
   res_dists_mean[[i]]=dists
@@ -311,10 +320,10 @@ for ( i in 1:length(res_pooled_mean_more)) {
   xboot=sample(x,size=500, replace = TRUE)
   
   #######################################################
-  # png(paste0("Mean_over_",as.character(res_names[i]),".png"))
-  # res_mean_more[[i]]=descdist(x, boot = 1000)
-  # title(paste("\n\nMean fit ",as.character(res_names[i])))
-  # dev.off()
+  png(paste0("Mean_over_",as.character(res_names[i]),".png"))
+   res_mean_more[[i]]=descdist(x, boot = 1000)
+   title(paste("\n\nMean fit ",as.character(res_names[i])))
+   dev.off()
   #######################################################
   
   dists=list()
@@ -339,17 +348,17 @@ for ( i in 1:length(res_pooled_mean_more)) {
   
   
   for ( jj in idlist ) {
-    outfilepdf=paste0("Plot_over7","_",paste0(as.character(res_names[i]),"_dists_mean.pdf"))
-    outfilepng=paste0("Plot_over7","_",paste0(as.character(res_names[i]),"_dists_mean.png"))
+    outfilepdf=paste0("Plot_over","_",paste0(as.character(res_names[i]),"_dists_mean.pdf"))
+    outfilepng=paste0("Plot_over","_",paste0(as.character(res_names[i]),"_dists_mean.png"))
     
     ds=denscomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"density"))
     qq=qqcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"QQ-plot"))
     cd=cdfcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"CDF"))
     pp=ppcomp(dists,legendtext=eval(idlist),plotstyle = "ggplot",main=paste(as.character(res_names[i]),"PP-plot"))
     
-    # out=ggarrange(ds, qq, cd, pp)
-    # ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
-    # ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
+    out=ggarrange(ds, qq, cd, pp)
+    ggsave(outfilepdf,plot=out, width = 8, height = 7,device="pdf")
+    ggsave(outfilepng,plot=out, width = 8, height = 7,device="png")
   }
   
   res_dists_mean_more[[i]]=dists
@@ -364,6 +373,8 @@ for ( i in 1:length(res_pooled_mean_more)) {
 }
 
 ##########################################################################################################################################
+setwd("..")
+##########################################################################################################################################
 # Organize results
 
 names_dist=c("myco",
@@ -376,7 +387,7 @@ names_dist=c("myco",
              "norm_mean_mean",
              "norm_mean_sd",
              "norm_mean_stderr",
-             "norm_mean_stderr")
+             "norm_sd_stderr")
 
 
 
@@ -439,9 +450,9 @@ res_summary_mean_poor_df=data.frame(myco_class=names(res_pooled_mean_poor),do.ca
 res_summary_mean_more_df=data.frame(myco_class=names(res_pooled_mean_more),do.call("rbind",res_summary_mean_more))
 
 ##################################################################################################
-setwd("/home/alf/Scrivania/codice_dati_PDI")
-dir.create("gofstats")
-setwd("gofstats")
+
+dir.create("gofstats_EU")
+setwd("gofstats_EU")
 
 saveRDS(res_dists_UB,"res_dists_UB.rds")
 saveRDS(res_dists_LB,"res_dists_LB.rds")
@@ -458,7 +469,9 @@ saveRDS(res_kgof_dists_LB,"res_kgof_dists_LB.rds")
 saveRDS(res_kgof_dists_mean,"res_kgof_dists_mean.rds")
 saveRDS(res_kgof_dists_mean_more,"res_kgof_dists_mean_more.rds")
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
+##################################################################################################
+
+setwd("..")
 
 ##################################################################################################
 
@@ -471,8 +484,8 @@ XLConnect::writeWorksheetToFile("fitparams_UB.xls",res_gof_dists_UB_df,"gof_dist
 
 XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_summary_LB_df,"res_summary_LB")
 XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_param_LB_df,"res_param_LB")
-XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_kgof_dists_UB_df,"kgof_dists_LB")
-XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_gof_dists_UB_df,"gof_dists_LB")
+XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_kgof_dists_LB_df,"kgof_dists_LB")
+XLConnect::writeWorksheetToFile("fitparams_LB.xls",res_gof_dists_LB_df,"gof_dists_LB")
 
 XLConnect::writeWorksheetToFile("fitparams_mean.xls",res_summary_mean_poor_df,"res_summary_mean_only")
 XLConnect::writeWorksheetToFile("fitparams_mean.xls",res_param_mean_poor_df,"res_param_mean_only")
@@ -497,6 +510,7 @@ XLConnect::writeWorksheetToFile("fitparams_mean.xls",res_gof_dists_mean_more_df,
 # [16] "resLOQ_Method LOQ"   "resLOD_Method LOD"   "LB"                 
 # [19] "UB"                 
 #########################################################################
+
 # library(magick)
 # setwd("plots/all_table")
 # imgs=list.files()

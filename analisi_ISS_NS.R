@@ -8,28 +8,30 @@ library(ggplot2)
 library(ggpubr)
 #########################################################################################################
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
 
+setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
 source("aux_analisi_ISS.R")
 
 
-ex_adults_m_f=readRDS("final_data/extract_adults_agg_NS_EU.rds")
+ex_adults_ad=rec_excel("final_data/extract_adults_AGGREGATED_NS_CHK.xlsx")
+saveRDS(ex_adults_ad,file="final_data/ex_adults_ad_NS.rds")
 
-number_biomarker=lapply(ex_adults_m_f,function(x) length(na.omit((x$UB))))
+
+number_biomarker=lapply(ex_adults_ad,function(x) length(na.omit((x$UB))))
 
 res_pooled_UB=list()
 res_pooled_LB=list()
 res_UB=list()
 res_LB=list()
 
-res_desc=lapply(ex_adults_m_f,function(x) {c(mean(x$Mean,na.rm=T),mean(x$SD,na.rm=T),
+res_desc=lapply(ex_adults_ad,function(x) {c(mean(x$Mean,na.rm=T),mean(x$SD,na.rm=T),
                                              mean(x$UB,na.rm=T),sd(x$UB,na.rm=T),
-                                             mean(x$LB,na.rm=T),sd(x$UB,na.rm=T))})
+                                             mean(x$LB,na.rm=T),sd(x$LB,na.rm=T))})
 
 ###############################################################################################
 # con più di 6 dati
 
-moredata=ex_adults_m_f[c(which(as.numeric(unlist(number_biomarker))>6))]
+moredata=ex_adults_ad[c(which(as.numeric(unlist(number_biomarker))>6))]
 
 
 ###############################################################################################
@@ -42,8 +44,8 @@ res_more=lapply(moredata,function(x) {c(mean(x$Mean,na.rm=T),
                                      })
 ###############################################################################################
 
-res_pooled_UB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(x$UB[x$UB>0]))})
-res_pooled_LB=lapply(ex_adults_m_f,function(x) {as.numeric(na.omit(ifelse(x$LB==0,0.0001,x$LB)))})
+res_pooled_UB=lapply(ex_adults_ad,function(x) {as.numeric(na.omit(x$UB[x$UB>0]))})
+res_pooled_LB=lapply(ex_adults_ad,function(x) {as.numeric(na.omit(ifelse(x$LB==0,0.0001,x$LB)))})
 res_pooled_mean_more=lapply(res_more,function(x) resample_function_weib(x[1],x[2],N=500))
 
 
@@ -54,7 +56,9 @@ num_UB=lapply(res_pooled_UB,length)
 num_LB=lapply(res_pooled_LB,length)
 num_mean_more=lapply(res_pooled_mean_more,length) #500
 
-
+############################################################################################################
+dir.create("plots_NS")
+setwd("plots_NS")
 ############################################################################################################
 # UB upper bound data
 
@@ -281,6 +285,8 @@ for ( i in 1:length(res_pooled_mean_more)) {
 }
 
 ##########################################################################################################################################
+setwd("..")
+##########################################################################################################################################
 # Organize results
 
 names_dist=c("myco",
@@ -293,28 +299,28 @@ names_dist=c("myco",
              "norm_mean_mean",
              "norm_mean_sd",
              "norm_mean_stderr",
-             "norm_mean_stderr")
+             "norm_sd_stderr")
 
 
 
 names_gof=c("myco",
-             "weibull_D",
-             "weibull_kstest",
-             "weibull_aic",
-             "exp_D",
-             "exp_kstest",
-             "exp_AIC",
-             "norm_D",
-             "norm_kstest",
-             "norm_AIC")
+            "weibull_D",
+            "weibull_kstest",
+            "weibull_aic",
+            "exp_D",
+            "exp_kstest",
+            "exp_AIC",
+            "norm_D",
+            "norm_kstest",
+            "norm_AIC")
 
 names_kgof=c("myco",
-            "weibull_D",
-            "weibull_pvalue",
-            "exp_D",
-            "exp_pvalue",
-            "norm_D",
-            "norm_pvalue")
+             "weibull_D",
+             "weibull_pvalue",
+             "exp_D",
+             "exp_pvalue",
+             "norm_D",
+             "norm_pvalue")
 
 res_param_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_param_UB))
 res_param_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_param_LB))
@@ -349,10 +355,81 @@ res_summary_UB_df=data.frame(myco_class=names(res_pooled_UB),do.call("rbind",res
 res_summary_LB_df=data.frame(myco_class=names(res_pooled_LB),do.call("rbind",res_summary_LB))
 res_summary_mean_more_df=data.frame(myco_class=names(res_pooled_mean_more),do.call("rbind",res_summary_mean_more))
 
+##########################################################################################################################################
+# Organize results
+
+names_dist=c("myco",
+             "weibull_shape_mean",
+             "weibull_scale_mean",
+             "weibull_shape_stderr",
+             "weibull_scale_stderr",
+             "exp_rate_mean",
+             "exp_rate_stderr",
+             "norm_mean_mean",
+             "norm_mean_sd",
+             "norm_mean_stderr",
+             "norm_sd_stderr")
+
+
+
+names_gof=c("myco",
+            "weibull_D",
+            "weibull_kstest",
+            "weibull_aic",
+            "exp_D",
+            "exp_kstest",
+            "exp_AIC",
+            "norm_D",
+            "norm_kstest",
+            "norm_AIC")
+
+names_kgof=c("myco",
+             "weibull_D",
+             "weibull_pvalue",
+             "exp_D",
+             "exp_pvalue",
+             "norm_D",
+             "norm_pvalue")
+
+res_param_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_param_UB))
+res_param_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_param_LB))
+res_param_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_param_mean_more))
+
+res_gof_dists_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_gof_dists_UB))
+res_gof_dists_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_gof_dists_LB))
+res_gof_dists_mean_poor_df=data.frame(myco=names(res_pooled_mean_poor),do.call("rbind",res_gof_dists_mean))
+res_gof_dists_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_gof_dists_mean_more))
+
+res_kgof_dists_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_kgof_dists_UB))
+res_kgof_dists_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_kgof_dists_LB))
+res_kgof_dists_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_kgof_dists_mean_more))
+
+
+names(res_param_UB_df)=names_dist
+names(res_param_LB_df)=names_dist
+names(res_param_mean_more_df)=names_dist
+
+
+names(res_gof_dists_UB_df)=names_gof
+names(res_gof_dists_LB_df)=names_gof
+names(res_gof_dists_mean_more_df)=names_gof
+
+names(res_kgof_dists_UB_df)=names_kgof
+names(res_kgof_dists_LB_df)=names_kgof
+names(res_kgof_dists_mean_more_df)=names_kgof
+
+
+
+res_summary_UB_df=data.frame(myco_class=names(res_pooled_UB),do.call("rbind",res_summary_UB))
+res_summary_LB_df=data.frame(myco_class=names(res_pooled_LB),do.call("rbind",res_summary_LB))
+res_summary_mean_more_df=data.frame(myco_class=names(res_pooled_mean_more),do.call("rbind",res_summary_mean_more))
+
+
+
 ##################################################################################################
-setwd("/home/alf/Scrivania/codice_dati_PDI")
-dir.create("gofstats")
-setwd("gofstats")
+
+dir.create("gofstats_NS")
+setwd("gofstats_NS")
 
 saveRDS(res_dists_UB,"res_dists_UB_NS.rds")
 saveRDS(res_dists_LB,"res_dists_LB_NS.rds")
@@ -366,7 +443,7 @@ saveRDS(res_kgof_dists_UB,"res_kgof_dists_UB_NS.rds")
 saveRDS(res_kgof_dists_LB,"res_kgof_dists_LB_NS.rds")
 saveRDS(res_kgof_dists_mean_more,"res_kgof_dists_mean_more_NS.rds")
 
-setwd("/home/alf/Scrivania/codice_dati_PDI")
+setwd("..")
 
 ##################################################################################################
 
@@ -379,8 +456,8 @@ XLConnect::writeWorksheetToFile("fitparams_UB_NS.xls",res_gof_dists_UB_df,"gof_d
 
 XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_summary_LB_df,"res_summary_LB_NS")
 XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_param_LB_df,"res_param_LB_NS")
-XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_kgof_dists_UB_df,"kgof_dists_LB_NS")
-XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_gof_dists_UB_df,"gof_dists_LB_NS")
+XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_kgof_dists_LB_df,"kgof_dists_LB_NS")
+XLConnect::writeWorksheetToFile("fitparams_LB_NS.xls",res_gof_dists_LB_df,"gof_dists_LB_NS")
 
 
 
