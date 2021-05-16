@@ -153,6 +153,8 @@ res_kgof_dists_LB=list()
 for ( i in 1:length(res_pooled_LB)) {
   
   x=as.numeric(res_pooled_LB[[i]])
+  outliers <- boxplot(x)$out
+  if ((length(outliers) >4) & (length(x) >10)) {x=x[-which(x %in% outliers)]}
   xboot=sample(x,size=500, replace = TRUE)
   
   #######################################################
@@ -204,6 +206,7 @@ for ( i in 1:length(res_pooled_LB)) {
                       dists[[2]]$estimate,dists[[2]]$sd,
                       dists[[3]]$estimate,dists[[3]]$sd);
   res_summary_LB[[i]]=stat.desc(as.numeric(res_pooled_LB[[i]]))
+  
   res_gof_dists_LB[[i]]=c(gof_fw$ks,gof_fw$kstest,gof_fw$aic,
                           gof_fexp$ks,gof_fexp$kstest,gof_fexp$aic,
                           gof_flnor$ks,gof_flnor$kstest,gof_flnor$aic);
@@ -290,75 +293,6 @@ for ( i in 1:length(res_pooled_mean_more)) {
 
 ##########################################################################################################################################
 setwd("..")
-##########################################################################################################################################
-# Organize results
-
-names_dist=c("myco",
-             "weibull_shape_mean",
-             "weibull_scale_mean",
-             "weibull_shape_stderr",
-             "weibull_scale_stderr",
-             "exp_rate_mean",
-             "exp_rate_stderr",
-             "norm_mean_mean",
-             "norm_mean_sd",
-             "norm_mean_stderr",
-             "norm_sd_stderr")
-
-
-
-names_gof=c("myco",
-            "weibull_D",
-            "weibull_kstest",
-            "weibull_aic",
-            "exp_D",
-            "exp_kstest",
-            "exp_AIC",
-            "norm_D",
-            "norm_kstest",
-            "norm_AIC")
-
-names_kgof=c("myco",
-             "weibull_D",
-             "weibull_pvalue",
-             "exp_D",
-             "exp_pvalue",
-             "norm_D",
-             "norm_pvalue")
-
-res_param_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_param_UB))
-res_param_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_param_LB))
-res_param_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_param_mean_more))
-
-res_gof_dists_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_gof_dists_UB))
-res_gof_dists_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_gof_dists_LB))
-res_gof_dists_mean_poor_df=data.frame(myco=names(res_pooled_mean_poor),do.call("rbind",res_gof_dists_mean))
-res_gof_dists_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_gof_dists_mean_more))
-
-res_kgof_dists_UB_df=data.frame(myco=names(res_pooled_UB),do.call("rbind",res_kgof_dists_UB))
-res_kgof_dists_LB_df=data.frame(myco=names(res_pooled_LB),do.call("rbind",res_kgof_dists_LB))
-res_kgof_dists_mean_more_df=data.frame(myco=names(res_pooled_mean_more),do.call("rbind",res_kgof_dists_mean_more))
-
-
-names(res_param_UB_df)=names_dist
-names(res_param_LB_df)=names_dist
-names(res_param_mean_more_df)=names_dist
-
-
-names(res_gof_dists_UB_df)=names_gof
-names(res_gof_dists_LB_df)=names_gof
-names(res_gof_dists_mean_more_df)=names_gof
-
-names(res_kgof_dists_UB_df)=names_kgof
-names(res_kgof_dists_LB_df)=names_kgof
-names(res_kgof_dists_mean_more_df)=names_kgof
-
-
-
-res_summary_UB_df=data.frame(myco_class=names(res_pooled_UB),do.call("rbind",res_summary_UB))
-res_summary_LB_df=data.frame(myco_class=names(res_pooled_LB),do.call("rbind",res_summary_LB))
-res_summary_mean_more_df=data.frame(myco_class=names(res_pooled_mean_more),do.call("rbind",res_summary_mean_more))
-
 ##########################################################################################################################################
 # Organize results
 

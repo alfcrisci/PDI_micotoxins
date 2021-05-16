@@ -135,8 +135,6 @@ XLConnect::writeWorksheetToFile("PDI_norm_results_NS.xls",mean_UB_Adults[[i]],"m
 XLConnect::writeWorksheetToFile("PDI_norm_results_NS.xls",mean_LB_Adults[[i]],"mean_LB_Adults")
 
 
-
-
 ##########################################################################################################################
 
 ###################

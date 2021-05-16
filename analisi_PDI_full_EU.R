@@ -8,7 +8,7 @@ setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
 
 pdi_func=function(x,escr=70,vol_urine=2,weight=70) {return(x*(vol_urine/weight)*(100/escr))}
 sumfit=function(x) {return(data.frame(par=x$estimate[1],errpar=x$estimate[2],aic=x$aic,names=x$distname))}
-
+set.seed(2)
 ###########################################################################################################
 # data labeling
 

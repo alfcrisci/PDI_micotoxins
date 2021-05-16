@@ -7,7 +7,7 @@ library(psych)
 library(KScorrect)
 library(ggplot2)
 library(ggpubr)
-library(summarytools)
+
 #########################################################################################################
 
 setwd("/home/alf/Scrivania/codice_dati_PDI/PDI_micotoxins")
@@ -18,7 +18,6 @@ set.seed(2)
 
 ex_adults_ad=rec_excel("final_data/extract_adults_m_f_EU_CHK.xlsx")
 saveRDS(ex_adults_ad,file="final_data/ex_adults_m_f_EU.rds")
-
 
 number_biomarker_UB=lapply(ex_adults_ad,function(x) length(na.omit((x$UB))))
 number_biomarker_LB=lapply(ex_adults_ad,function(x) length(na.omit((x$LB))))
@@ -165,6 +164,9 @@ res_kgof_dists_LB=list()
 for ( i in 1:length(res_pooled_LB)) {
   
   x=as.numeric(res_pooled_LB[[i]])
+  outliers <- boxplot(x)$out
+  if ((length(outliers) >4) & (length(x) >10)) {x=x[-which(x %in% outliers)]}
+  
   xboot=sample(x,size=500, replace = TRUE)
   
   #######################################################
